@@ -2,14 +2,13 @@ pragma solidity ^0.8.18;
 
 /*
 This contract implement secret transaction
-Consider A deposits 1 eth to this smart contract and b withdrawals this 1 eth to complete the transaction
-
+Consider A deposits 1 eth to this smart contract and b withdrawals this 1 eth to complete the transaction, and they
+use a string s as their transaction identifier
 Traditional transaction make A directly send this 1 eth to B, but this allow direct link between A and B.
-
 Further trasaction introduce a third-party contract to allow A deposit this 1 eth and B withdrawal this 1 eth, to prevent direct link.
-However, one can still find connection between A and B, like they decide a string s as transaction identifier, and A provide hash encryption h(s) to deposit, and B provide s to withdraw.
-however, it is still not totally safe, as anyone find the withdraw transaction can know what is s, and then calculate h(s) themselves. With h(s), they can easily find the deposit transaction
-and hence find connection between A and B.
+However, one can still find connection between A and B,
+as deposit and withdraw have coincident when A provides a hashed string, hs to generate key, f(hs),
+and B provide s to verify key by verifying key == f(h(s)), while hs = h(s)
 
 This contract allows A to provide blind hash of the string, bhs or bh(s), by using a "blind factor" r
 and generate the key, f(bh(s))
@@ -82,13 +81,13 @@ contract BlindSignature{
     }
 
     /*
-    This function takes the RSA algorithm to decrypt original string with given blind factor r
+    This function takes the RSA algorithm to decrypt given key with given blind factor r
     This function can be done locally with public N and E
-    param blind - the "blind hashed" string
+    param blind - the "blind hashed" key
     param r - the "blind factor"
     return the original string, the transaction identifier
     */
-    function decodeBlindHash(bytes32 blind, uint256 r) external pure returns(bytes32){
+    function decodeBlindKey(bytes32 blind, uint256 r) external pure returns(bytes32){
         uint256 re = 1; // the inverse of r in module N
         while(re < uint256(N) && (re * r) % uint256(N) != 1){
             re = re + 1;
@@ -119,7 +118,7 @@ contract BlindSignature{
     }
 
     /*
-    This function use the precompiled contract in remix to calculate modulus of large exponent
+    This function use the package in remix to calculate modulus of large exponent
     This function can be done locally
     param base - the base of power
     param exponent - the exponent of power
