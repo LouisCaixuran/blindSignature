@@ -76,7 +76,7 @@ contract BlindSignature{
         require(Pool[key] == false);
         bytes32 hash = getHash(s);
         require(largeExp(hash, D, N) == key);
-        Pool[key] == true;
+        Pool[key] = true;
         address payable buyer = payable(msg.sender);
         return buyer.send(1 ether);
     }
